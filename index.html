@@ -9,13 +9,102 @@
 	<link rel="stylesheet" href="css/app.css">
 </head>
 <body>
+
 	<div class="row">
 		<div class="column">
 			<h1>Audiogram</h1>
+			<ul class="tabs" data-tabs id="settings">
+				<li class="tabs-title is-active"><a href="#vlavo_vzduch" aria-selected="true">Vľavo (vzduchom)</a></li>
+				<li class="tabs-title"><a href="#vpravo_vzduch" aria-selected="true">Vpravo (vzduchom)</a></li>
+				<li class="tabs-title"><a href="#vlavo_kost" aria-selected="true">Vľavo (kosťou)</a></li>
+				<li class="tabs-title"><a href="#vpravo_kost" aria-selected="true">Vpravo (kosťou)</a></li>
+			</ul>
+			<div class="tabs-content" data-tabs-content="settings">
+				<div class="tabs-panel is-active" id="vlavo_vzduch">
+					<div class="row">
+						<div class="column">
+							<span class="khz_popis">125</span>
+							<span class="khz_popis">250</span>
+							<span class="khz_popis">500</span>
+							<span class="khz_popis">1000</span>
+							<span class="khz_popis">2000</span>
+							<span class="khz_popis">4000</span>
+							<span class="khz_popis">8000</span>
+						</div>
+					</div>
+					<div class="row">
+						<div class="column">
+							<div class="slider vertical" data-slider data-initial-start="100" data-end="110" data-vertical="true" data-step="5" id="vv_125" data-changed-delay="50">
+								<span class="slider-handle" data-slider-handle role="slider" tabindex="1" aria-controls="sliderOutput1"></span>
+								<span class="slider-fill" data-slider-fill></span>
+								<input type="hidden">
+							</div>
+							<div class="slider vertical" data-slider data-initial-start="100" data-end="110" data-vertical="true" data-step="5" id="vv_250" data-changed-delay="50">
+								<span class="slider-handle" data-slider-handle role="slider" tabindex="1" aria-controls="sliderOutput1"></span>
+								<span class="slider-fill" data-slider-fill></span>
+								<input type="hidden">
+							</div>
+							<div class="slider vertical" data-slider data-initial-start="100" data-end="110" data-vertical="true" data-step="5" id="vv_500" data-changed-delay="50">
+								<span class="slider-handle" data-slider-handle role="slider" tabindex="1" aria-controls="sliderOutput1"></span>
+								<span class="slider-fill" data-slider-fill></span>
+								<input type="hidden">
+							</div>
+							<div class="slider vertical" data-slider data-initial-start="100" data-end="110" data-vertical="true" data-step="5" id="vv_1000" data-changed-delay="50">
+								<span class="slider-handle" data-slider-handle role="slider" tabindex="1" aria-controls="sliderOutput1"></span>
+								<span class="slider-fill" data-slider-fill></span>
+								<input type="hidden">
+							</div>
+							<div class="slider vertical" data-slider data-initial-start="100" data-end="110" data-vertical="true" data-step="5" id="vv_2000" data-changed-delay="50">
+								<span class="slider-handle" data-slider-handle role="slider" tabindex="1" aria-controls="sliderOutput1"></span>
+								<span class="slider-fill" data-slider-fill></span>
+								<input type="hidden">
+							</div>
+							<div class="slider vertical" data-slider data-initial-start="100" data-end="110" data-vertical="true" data-step="5" id="vv_4000" data-changed-delay="50">
+								<span class="slider-handle" data-slider-handle role="slider" tabindex="1" aria-controls="sliderOutput1"></span>
+								<span class="slider-fill" data-slider-fill></span>
+								<input type="hidden">
+							</div>
+							<div class="slider vertical" data-slider data-initial-start="100" data-end="110" data-vertical="true" data-step="5" id="vv_8000" data-changed-delay="50">
+								<span class="slider-handle" data-slider-handle role="slider" tabindex="1" aria-controls="sliderOutput1"></span>
+								<span class="slider-fill" data-slider-fill></span>
+								<input type="hidden">
+							</div>
+
+						</div>
+					</div>
+					<div class="row">
+						<div class="column">
+							<input type="text" id="vv_125_input" class="input_show">
+							<input type="text" id="vv_250_input" class="input_show">
+							<input type="text" id="vv_500_input" class="input_show">
+							<input type="text" id="vv_1000_input" class="input_show">
+							<input type="text" id="vv_2000_input" class="input_show">
+							<input type="text" id="vv_4000_input" class="input_show">
+							<input type="text" id="vv_8000_input" class="input_show">
+						</div>
+					</div>
+				</div>
+				<div class="tabs-panel" id="vpravo_vzduch">
+					s
+				</div>
+				<div class="tabs-panel" id="vlavo_kost">
+					d
+				</div>
+				<div class="tabs-panel" id="vpravo_kost">
+					f
+				</div>
+			</div>
+			
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="column">
 			<canvas id="audiogram" width="840" height="594"></canvas>
 		</div>
 	</div>
 
+	
 	
 	<script src="js/vendor/jquery.js"></script>
 	<script src="js/vendor/foundation.js"></script>

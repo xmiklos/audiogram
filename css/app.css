@@ -4,3 +4,14 @@
 	margin-right: auto;
 	display: block;
 }
+
+.input_show {
+	width: 48px;
+	display: inline;
+}
+
+.khz_popis {
+	width: 48px;
+	display: inline-block;
+	text-align: center;
+}
