@@ -154,14 +154,21 @@ a.Define.module('Audiogram', function(ns, $){
 			}
 		},
 		reDraw: function() {
+			ctx.restore();
 			this.clearLayout();
 			this.drawLayout();
+			ctx.save();
 			var line = false;
 			var prefixes = ['vv_', 'pv_', 'vk_', 'pk_'];
 			var fncs = [_drawX, _drawO, _drawRS, _drawLS];
 			
 			for (var j = 0; j < prefixes.length; ++j) {
 				var prefix = prefixes[j];
+				
+				if (j > 1) {
+					ctx.setLineDash([7, 5]);
+				}
+				
 				for (var i = 1; i < khz.length - 1; ++i) {
 					var db = $('#'+prefix+khz[i]+'_input').val();
 					var enabled = $('.'+prefix+khz[i]+'_en').is(':checked');
@@ -181,7 +188,7 @@ a.Define.module('Audiogram', function(ns, $){
 
 						if (line) {
 							ctx.beginPath();
-							ctx.lineWidth=2;
+							ctx.lineWidth=1;
 							ctx.moveTo(x + 7, y - 3);
 						}
 					}
@@ -212,28 +219,28 @@ a.Define.module('Audiogram', function(ns, $){
 		ctx.stroke();
 		ctx.closePath();
 	*/
-		ctx.font = "bold "+(font_size+10)+"px Arial";
+		ctx.font = ""+(font_size+10)+"px Arial";
 		ctx.textBaseline = "middle";
-		var txt = "X";
+		var txt = "x";
 		ctx.fillText(txt, x - ctx.measureText(txt).width / 2, y);
 	}
 	
 	function _drawO(x, y) {
-		ctx.font = "bold "+(font_size+10)+"px Arial";
+		ctx.font = ""+(font_size+10)+"px Arial";
 		ctx.textBaseline = "middle";
-		var txt = "O";
+		var txt = "o";
 		ctx.fillText(txt, x - ctx.measureText(txt).width / 2, y);
 	}
 	
 	function _drawLS(x, y) {
-		ctx.font = "bold "+(font_size+10)+"px Courier";
+		ctx.font = ""+(font_size+12)+"px Arial";
 		ctx.textBaseline = "middle";
 		var txt = "<";
 		ctx.fillText(txt, x - ctx.measureText(txt).width / 2, y);
 	}
 	
 	function _drawRS(x, y) {
-		ctx.font = "bold "+(font_size+10)+"px Arial";
+		ctx.font = ""+(font_size+12)+"px Arial";
 		ctx.textBaseline = "middle";
 		var txt = ">";
 		ctx.fillText(txt, x - ctx.measureText(txt).width / 2, y);
