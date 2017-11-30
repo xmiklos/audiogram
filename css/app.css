@@ -10,7 +10,7 @@
 	display: inline;
 }
 
-.khz_popis {
+.khz_popis, .khz_en {
 	width: 48px;
 	display: inline-block;
 	text-align: center;
