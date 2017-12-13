@@ -97,34 +97,39 @@ Object.defineProperty(window, 'a', $.extend(default_descriptor, { value: a }));
 
 })(window, jQuery);
 
-a.Define.module('Audiogram', function(ns, $){
+a.Define.class('Audiogram', function(ns, $){
 	
 	var canvas = document.getElementById("audiogram"); // 840, 594
 	var ctx = canvas.getContext("2d");
-	var table_x = 50;
-	var table_y = 100;
-	var size = 30;
-	var font_size = 12;
+	var size = 40;
+	var font_size = 14;
 	var khz = [60, 125, 250, 500, 1000, 2000, 4000, 8000, 12000];
 	
-	return {
+	function Audiogram(x, y, prefixes, fncs) {
+		this.table_x = x;
+		this.table_y = y;	
+		this.prefixes = prefixes;
+		this.fncs = fncs;
+	}
+	
+	Audiogram.prototype = {
 		drawLayout: function() {
 
 			ctx.beginPath();
 			ctx.lineWidth=3;
-			ctx.moveTo(table_x, table_y);
-			ctx.lineTo(table_x, table_y + 12 * size);
-			ctx.lineTo(table_x + 8 * size * 2, table_y + 12 * size);
-			ctx.lineTo(table_x + 8 * size * 2, table_y);
-			ctx.lineTo(table_x, table_y);
+			ctx.moveTo(this.table_x, this.table_y);
+			ctx.lineTo(this.table_x, this.table_y + 12 * size);
+			ctx.lineTo(this.table_x + 8 * size * 2, this.table_y + 12 * size);
+			ctx.lineTo(this.table_x + 8 * size * 2, this.table_y);
+			ctx.lineTo(this.table_x, this.table_y);
 			ctx.stroke();
 			ctx.closePath();
 			
 			for (var i = 1; i < 12; ++i) {
 				ctx.beginPath();
 				ctx.lineWidth=1.5;
-				ctx.moveTo(table_x, table_y + size * i);
-				ctx.lineTo(table_x + 8 * size * 2, table_y + size * i);
+				ctx.moveTo(this.table_x, this.table_y + size * i);
+				ctx.lineTo(this.table_x + 8 * size * 2, this.table_y + size * i);
 				ctx.stroke();
 				ctx.closePath();
 			}
@@ -132,8 +137,8 @@ a.Define.module('Audiogram', function(ns, $){
 			for (var i = 1; i < 8; ++i) {
 				ctx.beginPath();
 				ctx.lineWidth=2.5;
-				ctx.moveTo(table_x + 2*size * i, table_y);
-				ctx.lineTo(table_x + 2*size * i, table_y + size * 12);
+				ctx.moveTo(this.table_x + 2*size * i, this.table_y);
+				ctx.lineTo(this.table_x + 2*size * i, this.table_y + size * 12);
 				ctx.stroke();
 				ctx.closePath();
 			}
@@ -143,27 +148,24 @@ a.Define.module('Audiogram', function(ns, $){
 			
 			for (var i = -10, j = 0; i <= 100 ; i+=10, j++) {
 				var txt = ''+i;
-				ctx.fillText(txt, table_x - 10 - ctx.measureText(txt).width, table_y + size * j);
-				ctx.fillText(txt, table_x + 8 * 2 * size + 25 - ctx.measureText(txt).width, table_y + size * j);
+				ctx.fillText(txt, this.table_x - 10 - ctx.measureText(txt).width, this.table_y + size * j);
+				ctx.fillText(txt, this.table_x + 8 * 2 * size + 25 - ctx.measureText(txt).width, this.table_y + size * j);
 			}
 			
 			ctx.textBaseline="bottom";
 			for (j = 0; j < khz.length ; j++) {
 				var txt = ''+khz[j];
-				ctx.fillText(txt, table_x + j * size * 2 - ctx.measureText(txt).width / 2, table_y - 5);
+				ctx.fillText(txt, this.table_x + j * size * 2 - ctx.measureText(txt).width / 2, this.table_y - 5);
 			}
 		},
 		reDraw: function() {
 			ctx.restore();
-			this.clearLayout();
 			this.drawLayout();
 			ctx.save();
 			var line = false;
-			var prefixes = ['vv_', 'pv_', 'vk_', 'pk_'];
-			var fncs = [_drawX, _drawO, _drawRS, _drawLS];
 			
-			for (var j = 0; j < prefixes.length; ++j) {
-				var prefix = prefixes[j];
+			for (var j = 0; j < this.prefixes.length; ++j) {
+				var prefix = this.prefixes[j];
 				
 				if (j > 1) {
 					ctx.setLineDash([7, 5]);
@@ -173,23 +175,23 @@ a.Define.module('Audiogram', function(ns, $){
 					var db = $('#'+prefix+khz[i]+'_input').val();
 					var enabled = $('.'+prefix+khz[i]+'_en').is(':checked');
 					if (enabled) {
-						var x = table_x + i * 2 * size;
-						var y = table_y + size + (db/10)*size;
+						var x = this.table_x + i * 2 * size;
+						var y = this.table_y + size + (db/10)*size;
 					
 						if (line) { // end path from prev iteration
-							ctx.lineTo(x - 7, y - 3);
+							ctx.lineTo(x - 10, y - 3);
 							ctx.stroke();
 							ctx.closePath();
 						}
 
-						fncs[j](x, y);
+						this.fncs[j](x, y);
 
 						line = i + 1 < khz.length - 1 && $('.'+prefix+khz[i + 1]+'_en').is(':checked'); // is there line to next?
 
 						if (line) {
 							ctx.beginPath();
-							ctx.lineWidth=1;
-							ctx.moveTo(x + 7, y - 3);
+							ctx.lineWidth=2;
+							ctx.moveTo(x + 10, y - 3);
 						}
 					}
 				}
@@ -207,50 +209,67 @@ a.Define.module('Audiogram', function(ns, $){
 		},
 	};
 	
-	function _drawX(x, y) {
-	/*
+	Audiogram._drawX = function(x, y) {
+	
 		ctx.beginPath();
-		ctx.lineWidth=1.5;
-		var c = 6;
+		ctx.lineWidth=2;
+		var c = 7;
 		ctx.moveTo(x - c, y - c);
 		ctx.lineTo(x + c, y + c);
 		ctx.moveTo(x - c, y + c);
 		ctx.lineTo(x + c, y - c);
 		ctx.stroke();
 		ctx.closePath();
-	*/
+	/*
 		ctx.font = ""+(font_size+10)+"px Arial";
 		ctx.textBaseline = "middle";
 		var txt = "x";
-		ctx.fillText(txt, x - ctx.measureText(txt).width / 2, y);
+		ctx.fillText(txt, x - ctx.measureText(txt).width / 2, y);*/
 	}
 	
-	function _drawO(x, y) {
-		ctx.font = ""+(font_size+10)+"px Arial";
+	Audiogram._drawO = function(x, y) {
+		ctx.font = ""+(font_size+18)+"px Arial";
 		ctx.textBaseline = "middle";
 		var txt = "o";
 		ctx.fillText(txt, x - ctx.measureText(txt).width / 2, y);
 	}
 	
-	function _drawLS(x, y) {
+	Audiogram._drawLS = function(x, y) {/*
 		ctx.font = ""+(font_size+12)+"px Arial";
 		ctx.textBaseline = "middle";
-		var txt = "<";
-		ctx.fillText(txt, x - ctx.measureText(txt).width / 2, y);
+		var txt = "[";
+		ctx.fillText(txt, x - ctx.measureText(txt).width - 2, y);*/
 	}
 	
-	function _drawRS(x, y) {
+	Audiogram._drawRS = function(x, y) {/*
 		ctx.font = ""+(font_size+12)+"px Arial";
 		ctx.textBaseline = "middle";
-		var txt = ">";
-		ctx.fillText(txt, x - ctx.measureText(txt).width / 2, y);
+		var txt = "]";
+		ctx.fillText(txt, x + 2, y);*/
+		
+		ctx.beginPath();
+		ctx.lineWidth=2;
+		var c = 7;
+		ctx.moveTo(x - c, y - c -4);
+		ctx.lineTo(x + c, y - c -4);
+		ctx.lineTo(x + c, y + c*2-4);
+		ctx.lineTo(x - c, y + c*2-4);
+		ctx.stroke();
+		ctx.closePath();
 	}
+	
+	return Audiogram;
 });
 
 $(document).foundation();
 
-$('.input_show, .khz_en').change(function(){ 
-	a.Audiogram.reDraw();
+var a1 = new a.Audiogram(50, 100, ['vv_', 'vk_'], [a.Audiogram._drawX, a.Audiogram._drawRS]);
+var a2 = new a.Audiogram(800, 100, ['pv_','pk_'], [a.Audiogram._drawO, a.Audiogram._drawLS]);
+
+$('.input_show, .khz_en').change(function(){
+	a1.clearLayout();
+	a1.reDraw();
+	a2.reDraw();
 });
 
 $('.slider').on('moved.zf.slider', function(e) {
@@ -258,11 +277,11 @@ $('.slider').on('moved.zf.slider', function(e) {
 	$('#'+$target.attr('id')+'_input').val(100 - $target.find('input').val()).trigger('change'); 
 });
 
-
-a.Audiogram.drawLayout();
+a1.drawLayout();
+a2.drawLayout();
 
 $('button').click(function() {
-	a.Audiogram.downloadPDF();
+	a1.downloadPDF();
 });
 
 
