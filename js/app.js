@@ -120,9 +120,8 @@ a.Define.module('Data', function(ns, $){
 		load: function() {
 
 			if (!data['text']) {
-				$.ajax({ url: 'text.txt', async: false}).done(function(txt){
-					data['text'] = txt;
-				});
+				
+				data['text'] = $('.text').text();
 			}
 
 			if (!data['datum']) {
