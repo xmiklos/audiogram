@@ -253,11 +253,15 @@ a.Define.class('Audiogram', function(ns, $){
 			ctx.textBaseline="bottom";
 			for (j = 0; j < khz.length ; j++) {
 				var txt = ''+khz[j];
-				ctx.fillText(txt, this.table_x + j * size * 2 - ctx.measureText(txt).width / 2, this.table_y - 5);
+				var x = Math.min(this.table_x + j * size * 2 - ctx.measureText(txt).width / 2, this.table_x + (khz.length-1) * size * 2 - ctx.measureText(txt).width);
+				ctx.fillText(txt, x, this.table_y - 5);
 			}
 			
 			ctx.font = "bold 18px Arial";
 			ctx.fillText(this.label, this.table_x, this.table_y - 30);
+			ctx.font = "14px Arial";
+			ctx.fillText("[Hz]", this.table_x + 8*2*size - ctx.measureText("[Hz]").width, this.table_y - 30);
+			ctx.fillText("[dB]", this.table_x - 10 - ctx.measureText("[dB]").width, this.table_y + 12*size);
 
 			//console.log('x:', this.x_positions, 'y:', this.y_positions);
 		},
@@ -321,12 +325,19 @@ a.Define.class('Audiogram', function(ns, $){
 		}
 	};
 
+	function _file_name() {
+		var d = new Date();
+		var meno = a.Data.get('meno').split(/\s+/g).reverse().join('_');
+		return meno + "_" + d.getFullYear() + "_" + ("0"+(d.getMonth()+1)).slice(-2) + "_" + ("0" + d.getDate()).slice(-2) + ".pdf"
+	
+	}
+
 	Audiogram.downloadPDF = function() {
 		var pdf = new jsPDF();
 		var width = pdf.internal.pageSize.width;    
 		var height = pdf.internal.pageSize.height;
 		pdf.addImage(canvas.toDataURL("image/jpeg", 1), "JPEG", 0, 0, width, height);
-		pdf.save("test.pdf");
+		pdf.save(_file_name());
 	};
 
 	Audiogram.clearCanvas = function() {
