@@ -97,23 +97,115 @@ Object.defineProperty(window, 'a', $.extend(default_descriptor, { value: a }));
 
 })(window, jQuery);
 
+a.Define.module('Data', function(ns, $){
+
+	var data_names = ['meno', 'rodne_cislo', 'zp', 'datum', 'pracovisko', 'tinnitus', 'vysetril', 'text'];
+	var data = {};
+
+	return {
+		new: function(){
+			data = {};
+			this.load();
+		},
+		save: function(){
+			data = {};
+			for (var i = 0; i < data_names.length; ++i) {
+				var name = data_names[i];
+				var val = $('.'+name).val();
+				if (val) {
+					data[name] = val;
+				}
+			}
+		},
+		load: function() {
+
+			if (!data['text']) {
+				$.ajax({ url: 'text.txt', async: false}).done(function(txt){
+					data['text'] = txt;
+				});
+			}
+
+			if (!data['datum']) {
+				data['datum'] = _time();
+			}
+
+			for (var i = 0; i < data_names.length; ++i) {
+				var name = data_names[i];
+				var val = data[name] || defaults[name] || '';
+				$('.'+name).val(val);
+			}
+		},
+		get: function(key) {
+			return data[key] || '';
+		},
+	};
+
+	function _time() {
+		var d = new Date();
+		return ("0" + d.getDate()).slice(-2) + ". " + ("0"+(d.getMonth()+1)).slice(-2) + ". " + d.getFullYear() + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+	}
+
+});
+
 a.Define.class('Audiogram', function(ns, $){
 	
 	var canvas = document.getElementById("audiogram"); // 840, 594
 	var ctx = canvas.getContext("2d");
+	ctx.fillStyle = "white";
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	var size = 40;
 	var font_size = 14;
-	var khz = [60, 125, 250, 500, 1000, 2000, 4000, 8000, 12000];
-	
-	function Audiogram(x, y, prefixes, fncs) {
+	var khz	=	[60,	125,	250,	500,	1000,	2000,	4000,	8000,	12000];
+
+	// fowler strata sluchu
+	var db500 =	[
+	//		 -10,	-5,	0,	5,	10,	15,	20,	25,	30,	35,	40,	45,	50
+			 0,	0,	0,	0,	0.2,	0.5,	1.1,	1.8,	2.6,	3.7,	4.9,	6.4,	7.9,
+	//		 55,	60,	65,	70,	75,	80,	85,	90,	95,	100,	105,
+			 9.6,	11.3,	12.8,	13.8,	14.6,	14.8,	14.9,	15,	15,	15,	15,
+	];
+
+	var db1000 =	[
+	//		 -10,	-5,	0,	5,	10,	15,	20,	25,	30,	35,	40,	45,	50
+			 0,	0,	0,	0,	0.3,	0.9,	2.1,	3.6,	5.4,	7.7,	10.2,	13.0,	15.7,
+	//		 55,	60,	65,	70,	75,	80,	85,	90,	95,	100,	105,
+			 19.0,	21.5,	23.5,	25.5,	27.2,	28.8,	29.8,	29.9,	30.0,	30.0,	30.0,
+	];
+
+	var db2000 =	[
+	//		 -10,	-5,	0,	5,	10,	15,	20,	25,	30,	35,	40,	45,	50
+			 0,	0,	0,	0,	0.4,	1.3,	2.9,	4.9,	7.2,	9.8,	12.9,	17.3,	22.4,
+	//		 55,	60,	65,	70,	75,	80,	85,	90,	95,	100,	105,
+			 25.7,	28.0,	30.2,	32.2,	34.0,	35.8,	37.5,	39.2,	40.0,	40.0,	40.0,
+	];
+
+	var db4000 =	[
+	//		 -10,	-5,	0,	5,	10,	15,	20,	25,	30,	35,	40,	45,	50
+			 0,	0,	0,	0,	0.1,	0.3,	0.9,	1.7,	2.7,	3.8,	5.0,	6.4,	8.0,
+	//		 55,	60,	65,	70,	75,	80,	85,	90,	95,	100,	105,
+			 9.7,	11.2,	12.5,	13.5,	14.2,	14.6,	14.8,	14.9,	15,	15,	15,
+	];
+
+	var loss_left;
+	var loss_right;
+	var loss;
+
+	var left;
+	var right;
+
+	function Audiogram(x, y, label) {
 		this.table_x = x;
-		this.table_y = y;	
-		this.prefixes = prefixes;
-		this.fncs = fncs;
+		this.table_y = y;
+		this.label = label;
+
+		this.ear	= [];
+		this.bone	= [];
 	}
-	
+
 	Audiogram.prototype = {
 		drawLayout: function() {
+			this.x_positions = [];
+			this.y_positions = [];
 
 			ctx.beginPath();
 			ctx.lineWidth=3;
@@ -124,7 +216,7 @@ a.Define.class('Audiogram', function(ns, $){
 			ctx.lineTo(this.table_x, this.table_y);
 			ctx.stroke();
 			ctx.closePath();
-			
+
 			for (var i = 1; i < 12; ++i) {
 				ctx.beginPath();
 				ctx.lineWidth=1.5;
@@ -133,7 +225,11 @@ a.Define.class('Audiogram', function(ns, $){
 				ctx.stroke();
 				ctx.closePath();
 			}
-			
+
+			for (var i = 0; i < 24; ++i) {
+				this.y_positions.push(this.table_y + (size/2) * i);
+			}
+
 			for (var i = 1; i < 8; ++i) {
 				ctx.beginPath();
 				ctx.lineWidth=2.5;
@@ -141,9 +237,11 @@ a.Define.class('Audiogram', function(ns, $){
 				ctx.lineTo(this.table_x + 2*size * i, this.table_y + size * 12);
 				ctx.stroke();
 				ctx.closePath();
+
+				this.x_positions.push(this.table_x + 2*size * i);
 			}
-			
-			ctx.font= font_size+"px Arial";
+
+			ctx.font = font_size+"px Arial";
 			ctx.textBaseline="middle";
 			
 			for (var i = -10, j = 0; i <= 100 ; i+=10, j++) {
@@ -157,58 +255,129 @@ a.Define.class('Audiogram', function(ns, $){
 				var txt = ''+khz[j];
 				ctx.fillText(txt, this.table_x + j * size * 2 - ctx.measureText(txt).width / 2, this.table_y - 5);
 			}
+			
+			ctx.font = "bold 18px Arial";
+			ctx.fillText(this.label, this.table_x, this.table_y - 30);
+
+			//console.log('x:', this.x_positions, 'y:', this.y_positions);
 		},
-		reDraw: function() {
+		draw: function(ear, bone) {
 			ctx.restore();
 			this.drawLayout();
 			ctx.save();
 			var line = false;
-			
-			for (var j = 0; j < this.prefixes.length; ++j) {
-				var prefix = this.prefixes[j];
+
+			// ear
+			for (var i = 1; i < khz.length - 1; ++i) {
+				if (this.ear[i - 1] !== null) {
+					var y = this.table_y + this.ear[i - 1] * (size / 2);
+					var x = this.table_x + i * 2 * size;
 				
-				if (j > 1) {
-					ctx.setLineDash([7, 5]);
-				}
-				
-				for (var i = 1; i < khz.length - 1; ++i) {
-					var db = $('#'+prefix+khz[i]+'_input').val();
-					var enabled = $('.'+prefix+khz[i]+'_en').is(':checked');
-					if (enabled) {
-						var x = this.table_x + i * 2 * size;
-						var y = this.table_y + size + (db/10)*size;
-					
-						if (line) { // end path from prev iteration
-							ctx.lineTo(x - 10, y - 3);
-							ctx.stroke();
-							ctx.closePath();
-						}
+					if (line) { // end path from prev iteration
+						ctx.lineTo(x - 10, y - 3);
+						ctx.stroke();
+						ctx.closePath();
+					}
 
-						this.fncs[j](x, y);
+					Audiogram[ear](x, y);
 
-						line = i + 1 < khz.length - 1 && $('.'+prefix+khz[i + 1]+'_en').is(':checked'); // is there line to next?
+					line = i + 1 < khz.length - 1 && this.ear[i] != null; // is there line to next?
 
-						if (line) {
-							ctx.beginPath();
-							ctx.lineWidth=2;
-							ctx.moveTo(x + 10, y - 3);
-						}
+					if (line) {
+						ctx.beginPath();
+						ctx.lineWidth=2;
+						ctx.moveTo(x + 10, y - 3);
 					}
 				}
 			}
-		},
-		clearLayout: function() {			
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-		},
-		downloadPDF: function() {
-			var pdf = new jsPDF();
-			var width = pdf.internal.pageSize.width;    
-			var height = pdf.internal.pageSize.height;
-			pdf.addImage(canvas.toDataURL("image/png"),"PNG", 0, 0, width, height / 2);
-			pdf.save("test.pdf");
-		},
+
+			line = false;
+			for (var i = 1; i < khz.length - 1; ++i) {
+				if (this.bone[i - 1] !== null) {
+					var y = this.table_y + this.bone[i - 1] * (size / 2);
+					var x = this.table_x + i * 2 * size;
+				
+					if (line) { // end path from prev iteration
+						ctx.lineTo(x - 10, y + 1);
+						ctx.setLineDash([15, 5]);
+						ctx.stroke();
+						ctx.closePath();
+					}
+
+					ctx.setLineDash([]);
+					Audiogram[bone](x, y);
+
+					line = i + 1 < khz.length - 1 && this.bone[i] != null; // is there line to next?
+
+					if (line) {
+						ctx.beginPath();
+						ctx.lineWidth=2;
+						ctx.moveTo(x + 10, y + 1);
+					}
+				}
+			}
+
+
+		}
 	};
-	
+
+	Audiogram.downloadPDF = function() {
+		var pdf = new jsPDF();
+		var width = pdf.internal.pageSize.width;    
+		var height = pdf.internal.pageSize.height;
+		pdf.addImage(canvas.toDataURL("image/jpeg", 1), "JPEG", 0, 0, width, height);
+		pdf.save("test.pdf");
+	};
+
+	Audiogram.clearCanvas = function() {
+		ctx.fillStyle = "white";
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		Audiogram.drawLegend();
+	};
+
+	Audiogram.drawLegend = function() {
+		var x = 130;
+		ctx.fillStyle = "black";
+		ctx.font = "bold 44px sans-serif";
+		ctx.fillText("Audiogram", x, 100);
+
+		ctx.font = "25px sans-serif";
+		ctx.fillText("Meno:", x, 150);
+		ctx.fillText(a.Data.get('meno'), x + 150, 150);
+
+		ctx.fillText("Rodné číslo:", x, 150 + 29);
+		ctx.fillText(a.Data.get('rodne_cislo'), x + 150, 150 + 29);
+
+		ctx.fillText("Poisťovňa:", x, 150 + 29*2);
+		ctx.fillText(a.Data.get('zp'), x + 150, 150 + 29*2);
+
+		var pracovisko = a.Data.get('pracovisko');
+		ctx.fillText(pracovisko, canvas.width - 130 - ctx.measureText(pracovisko).width, 100);
+
+		var datum = a.Data.get('datum');
+		ctx.fillText(datum, canvas.width - 130 - ctx.measureText(datum).width, 129);
+
+		ctx.font = "18px sans-serif";
+		ctx.fillText("Vedenie: vzduchom (X, O), kosťou (], [)", x, 300 + 12.5*size);
+
+		Audiogram.calculateHearingLoss();
+		ctx.font = "25px sans-serif";
+		var ssv = loss_left.toFixed(2)+" %";
+		var ssp = loss_right.toFixed(2)+" %";
+		var css = loss.toFixed(2)+" %";
+		ctx.fillText("Strata sluchu vľavo:", x, 300 + 14*size);
+		ctx.fillText(ssv, 500 - ctx.measureText(ssv).width, 300 + 14*size);
+		ctx.fillText("Strata sluchu vpravo:", x, 300 + 14.8 * size);
+		ctx.fillText(ssp, 500 - ctx.measureText(ssp).width, 300 + 14.8*size);
+		ctx.fillText("Celková strata sluchu:", x, 300 + 15.6*size);
+		ctx.fillText(css, 500 - ctx.measureText(css).width, 300 + 15.6*size);
+
+		ctx.fillText("Tinnitus: "+a.Data.get('tinnitus'), 900, 300 + 14*size);
+		ctx.fillText("Vyšetril(a): "+a.Data.get('vysetril'), 900, 300 + 15.6*size);
+
+		ctx.wrapText(a.Data.get('text'), x, 300 + 20*size, canvas.width - 260, 29);
+	};
+
 	Audiogram._drawX = function(x, y) {
 	
 		ctx.beginPath();
@@ -220,33 +389,27 @@ a.Define.class('Audiogram', function(ns, $){
 		ctx.lineTo(x + c, y - c);
 		ctx.stroke();
 		ctx.closePath();
-	/*
+
+	};
+
+	Audiogram._drawO = function(x, y) {
 		ctx.font = ""+(font_size+10)+"px Arial";
 		ctx.textBaseline = "middle";
-		var txt = "x";
-		ctx.fillText(txt, x - ctx.measureText(txt).width / 2, y);*/
-	}
-	
-	Audiogram._drawO = function(x, y) {
-		ctx.font = ""+(font_size+18)+"px Arial";
-		ctx.textBaseline = "middle";
-		var txt = "o";
+		var txt = "O";
 		ctx.fillText(txt, x - ctx.measureText(txt).width / 2, y);
-	}
-	
-	Audiogram._drawLS = function(x, y) {/*
-		ctx.font = ""+(font_size+12)+"px Arial";
-		ctx.textBaseline = "middle";
-		var txt = "[";
-		ctx.fillText(txt, x - ctx.measureText(txt).width - 2, y);*/
-	}
-	
-	Audiogram._drawRS = function(x, y) {/*
-		ctx.font = ""+(font_size+12)+"px Arial";
-		ctx.textBaseline = "middle";
-		var txt = "]";
-		ctx.fillText(txt, x + 2, y);*/
-		
+	};
+	Audiogram._drawLS = function(x, y) {
+		ctx.beginPath();
+		ctx.lineWidth=2;
+		var c = 7;
+		ctx.moveTo(x + c, y - c -4);
+		ctx.lineTo(x - c, y - c -4);
+		ctx.lineTo(x - c, y + c*2-4);
+		ctx.lineTo(x + c, y + c*2-4);
+		ctx.stroke();
+		ctx.closePath();
+	};
+	Audiogram._drawRS = function(x, y) {
 		ctx.beginPath();
 		ctx.lineWidth=2;
 		var c = 7;
@@ -256,34 +419,253 @@ a.Define.class('Audiogram', function(ns, $){
 		ctx.lineTo(x - c, y + c*2-4);
 		ctx.stroke();
 		ctx.closePath();
+	};
+
+	Audiogram.new = function(){
+		a.Data.new();
+		right	= new a.Audiogram(130, 300, "Vpravo");
+		left	= new a.Audiogram(900, 300, "Vľavo");
+		Audiogram.reDraw();
+		_reset_history();
+	};
+
+	Audiogram.reDraw = function() {
+		Audiogram.clearCanvas();
+		right.draw('_drawO', '_drawRS');
+		left.draw('_drawX', '_drawLS');
+	};
+
+	Audiogram.calculateHearingLoss = function() {
+		loss_left	= db500[ _left_i(2) ] + db1000[ _left_i(3) ] + db2000[ _left_i(4) ] + db4000[ _left_i(5) ];
+		loss_right	= db500[ _right_i(2) ] + db1000[ _right_i(3) ] + db2000[ _right_i(4) ] + db4000[ _right_i(5) ];
+
+		var min	= Math.min(loss_left, loss_right);
+		var max	= Math.max(loss_left, loss_right);
+
+		loss = ((max - min) / 4) + min;
+
+//		console.log(loss_left, loss_right, loss);
+	};
+
+	function _left_i(freq_i) {
+		var val = left.ear[freq_i];
+		return val != null ? val : db500.length-1;
 	}
-	
+
+	function _right_i(freq_i) {
+		var val = right.ear[freq_i];
+		return val != null ? val : db500.length-1;
+	}
+
+	Audiogram.canvasClick = function(e) {
+		var rect = canvas.getBoundingClientRect();
+		var scale_x = canvas.width / $('#audiogram').width();
+		var scale_y = canvas.height / $('#audiogram').height();
+		var left_click = e.which === 1;
+
+		/* this will get canvas scaled coords */
+		var x = (e.clientX - rect.left) * scale_x;
+		var y = (e.clientY - rect.top) * scale_y;
+
+		//console.log(x, y);
+
+		var table_y = 300;
+
+		if (y < table_y) { // pred audiogramom
+			$('#udaje_form').foundation('open');
+		} else if ( y >= table_y && y <= table_y + 12 * size) { // audiogram
+
+			if (x > canvas.width / 2) { // vlavo
+				var	i_x = _get_nearest_x_index(left, x),
+					i_y = _get_nearest_y_index(left, y);
+				if (i_x != null && i_y != null) {
+					_save_history();
+//					console.log('indexes: ', i_x, i_y);
+
+					if (left_click) { // ear
+						if (left.ear[i_x] != null && left.ear[i_x] == i_y) {
+							left.ear[i_x] = null;
+						} else {
+							left.ear[i_x] = i_y;
+						}
+					} else { // bone
+						if (left.bone[i_x] != null && left.bone[i_x] == i_y) {
+							left.bone[i_x] = null;
+						} else {
+							left.bone[i_x] = i_y;
+						}
+					}
+
+//					console.log(left.ear, left.bone);
+					Audiogram.reDraw();
+				}
+			} else { // vpravo
+				var	i_x = _get_nearest_x_index(right, x),
+					i_y = _get_nearest_y_index(right, y);
+				if (i_x != null && i_y != null) {
+					_save_history();
+//					console.log('indexes: ', i_x, i_y);
+
+					if (left_click) { // ear
+						if (right.ear[i_x] != null && right.ear[i_x] == i_y) {
+							right.ear[i_x] = null;
+						} else {
+							right.ear[i_x] = i_y;
+						}
+					} else { // bone
+						if (right.bone[i_x] != null && right.bone[i_x] == i_y) {
+							right.bone[i_x] = null;
+						} else {
+							right.bone[i_x] = i_y;
+						}
+					}
+
+//					console.log(right.ear, right.bone);
+					Audiogram.reDraw();
+
+				}
+
+			}
+
+		} else { // za audiogramom
+			$('#udaje_form').foundation('open');
+		}
+		return false;
+	};
+
+	var history = [];
+
+	function _reset_history() {
+		history.length = 0;
+		$('.spat').addClass('disabled');
+	}
+
+	function _save_history() {
+		history.push({
+			le: left.ear.slice(),
+			lb: left.bone.slice(),
+			re: right.ear.slice(),
+			rb: right.bone.slice(),
+		});
+
+		$('.spat').removeClass('disabled');
+	}
+
+	Audiogram.load_history = function() {
+		var h = history.pop();
+		if (h) {
+			left.ear	= h.le;
+			left.bone	= h.lb;
+			right.ear	= h.re;
+			right.bone	= h.rb;
+			Audiogram.reDraw();
+		}
+
+		if (!history.length) {
+			$('.spat').addClass('disabled');
+		}
+	}
+
+	function _get_nearest_x_index(instance, val) {
+		var min_i	= 0,
+		    min_val	= Math.abs(val - instance.x_positions[0]);
+
+		for (var i = 0; i < instance.x_positions.length; ++i) {
+			var diff = Math.abs(val - instance.x_positions[i]);
+
+			if (diff < min_val) {
+				min_val = diff;
+				min_i   = i;
+			}
+		}
+
+		if (min_val > size) {
+			return null;
+		}
+
+		return min_i;
+	}
+
+	function _get_nearest_y_index(instance, val) {
+		var min_i	= 0,
+		    min_val	= Math.abs(val - instance.y_positions[0]);
+
+		for (var i = 0; i < instance.y_positions.length; ++i) {
+			var diff = Math.abs(val - instance.y_positions[i]);
+
+			if (diff < min_val) {
+				min_val = diff;
+				min_i   = i;
+			}
+		}
+
+		if (min_val > size) {
+			return null;
+		}
+
+		return min_i;
+	}
+
+
 	return Audiogram;
 });
 
+CanvasRenderingContext2D.prototype.wrapText = function (text, x, y, maxWidth, lineHeight) {
+
+    var lines = text.split("\n");
+
+    for (var i = 0; i < lines.length; i++) {
+
+        var words = lines[i].split(' ');
+        var line = '';
+
+        for (var n = 0; n < words.length; n++) {
+            var testLine = line + words[n] + ' ';
+            var metrics = this.measureText(testLine);
+            var testWidth = metrics.width;
+            if (testWidth > maxWidth && n > 0) {
+                this.fillText(line, x, y);
+                line = words[n] + ' ';
+                y += lineHeight;
+            }
+            else {
+                line = testLine;
+            }
+        }
+
+        this.fillText(line, x, y);
+        y += lineHeight;
+    }
+}
 $(document).foundation();
 
-var a1 = new a.Audiogram(50, 100, ['vv_', 'vk_'], [a.Audiogram._drawX, a.Audiogram._drawRS]);
-var a2 = new a.Audiogram(800, 100, ['pv_','pk_'], [a.Audiogram._drawO, a.Audiogram._drawLS]);
-
-$('.input_show, .khz_en').change(function(){
-	a1.clearLayout();
-	a1.reDraw();
-	a2.reDraw();
+$(document).on('open.zf.reveal', '#udaje_form', function(){
+	a.Data.load();
 });
 
-$('.slider').on('moved.zf.slider', function(e) {
-	var $target = $(e.target);
-	$('#'+$target.attr('id')+'_input').val(100 - $target.find('input').val()).trigger('change'); 
+$(document).on('click', '#udaje_form .uloz', function(){
+	a.Data.save();
+	$('#udaje_form').foundation('close');
+	a.Audiogram.reDraw();
 });
 
-a1.drawLayout();
-a2.drawLayout();
-
-$('button').click(function() {
-	a1.downloadPDF();
+$(document).on('click', '.novy_audiogram', function(){
+	a.Audiogram.new();
+	$('#udaje_form').foundation('open');
+	return false;
 });
 
+$(document).on('click', '.ulozit_audiogram', function(){
+	a.Audiogram.downloadPDF();
+	return false;
+});
 
+$(document).on('click', '.spat', function(){
+	a.Audiogram.load_history();
+	return false;
+});
 
+$(document).on('click contextmenu', '#audiogram', a.Audiogram.canvasClick);
+
+$('.novy_audiogram').trigger('click');
 
