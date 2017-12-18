@@ -1,7 +1,6 @@
 
 var defaults = {
-	pracovisko:	"NSP MI",
-	vysetril:	"Mgr. XYZ XYZ",
-
+	pracovisko:	"NsP Š. Kukuru Michalovce, a.s. - P66599044201 Foniatrická ambulancia - Audiometria",
+	vysetril:	"Mgr. Lýdia Miklošová",
 };
 

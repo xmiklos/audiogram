@@ -1,0 +1,26 @@
+
+@page {
+	size: A4;
+	margin: 0;
+}
+
+.sticky_menu {
+	display: none;
+}
+
+body, .page_row, .page_row > .column, .page, #app_content {
+	margin: 0!important;
+	padding: 0!important;
+}
+body {
+/*	border: 1px solid black;*/
+}
+
+.page {
+	height: calc( 1.4 * 29.7cm);
+	overflow: hidden;
+}
+
+.reveal-overlay, .reveal {
+/*	display: none!important;*/
+}

@@ -40,16 +40,22 @@ my $udaje_form = <<EOF;
 		</div>
 	</div>
 	<div class="row">
-		<div class="column small-12 medium-6">
+		<div class="column small-12">
 			<label>Tinnitus
-				<input type="text" class="tinnitus">
+				<textarea class="tinnitus" rows="4"></textarea>
 			</label>
 		</div>
 	</div>
 	<div class="row">
 		<div class="column small-12">
 			<label>Text pod
-				<textarea class="text"></textarea>
+				<textarea class="text" rows="4">Informovaný súhlas
+
+Ja, dolupodpísaný pacient (prípadne zákonný zástupca pacienta) prehlasujem, že mi bolo ošetrujúcim zdravotníckym pracovníkom poskytnuté poučenie v zmysle §6 zákona č. 576/2004 o zdravotnej starostlivosti, službách súvisiacich s poskytovaním zdravotnej starostlivosti a o zmene a doplnení niektorých zákonov v platnom znení. Ošetrujúci zdravotnícky pracovník ma informoval o účele, povahe, následkoch a rizikách poskytnutia zdravotnej starostlivosti, o možnostiach voľby navrhovaných postupov a rizikách odmietnutia poskytnutia zdravotnej starostlivosti. Ošetrujúci zdravotnícky pracovník mi poskytol poučenie zrozumiteľne, ohľaduplne, bez nátlaku, s možnosťou a dostatočným časom slobodne sa rozhodnúť pre informovaný súhlas a primerane mojej rozumovej a vôľovej vyspelosti a môjmu zdravotnému stavu. Bol som poučený o ďalšom postupe a nakladaní s  výsledkom vyšetrenia sluchu, s ktorým  sa mám hlásiť u lekára, ktorý ma na vyšetrenie sluchu odoslal.
+Svojím podpisom potvrdzujem, že  mi bol vydaný výsledok vyšetrenia sluchu: audiogram, tympanogram.
+
+
+Podpis pacienta ........................</textarea>
 			</label>
 		</div>
 	</div>
@@ -73,6 +79,7 @@ my $body = <<EOF;
 					<ul class="menu vertical">
 						<li><a href="#" class="novy_audiogram">Nový</a></li>
 						<li><a href="#" class="ulozit_audiogram">Uložiť</a></li>
+						<li><a href="#" class="tlac">Tlačiť</a></li>
 					</ul>
 				</li>
 				<li>
@@ -122,6 +129,7 @@ my $html = <<EOF;
 	<title>Audiogram</title>
 	<link rel="stylesheet" href="css/foundation.css">
 	<link rel="stylesheet" href="css/app.css">
+	<link rel="stylesheet" href="css/print.css" media="print">
 </head>
 <body>
 	<div id="app_content">
