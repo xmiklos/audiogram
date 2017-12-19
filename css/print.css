@@ -17,7 +17,8 @@ body {
 }
 
 .page {
-	height: calc( 1.4 * 29.7cm);
+	width: calc(21cm);
+	height: calc(29.7cm); 
 	overflow: hidden;
 }
 

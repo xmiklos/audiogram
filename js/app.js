@@ -279,7 +279,7 @@ a.Define.class('Audiogram', function(ns, $){
 					var x = this.table_x + i * 2 * size;
 				
 					if (line) { // end path from prev iteration
-						ctx.lineTo(x - 10, y - 3);
+						ctx.lineTo(x - 10, y + 1);
 						ctx.stroke();
 						ctx.closePath();
 					}
@@ -291,7 +291,7 @@ a.Define.class('Audiogram', function(ns, $){
 					if (line) {
 						ctx.beginPath();
 						ctx.lineWidth=2;
-						ctx.moveTo(x + 10, y - 3);
+						ctx.moveTo(x + 10, y + 1);
 					}
 				}
 			}
@@ -303,7 +303,7 @@ a.Define.class('Audiogram', function(ns, $){
 					var x = this.table_x + i * 2 * size;
 				
 					if (line) { // end path from prev iteration
-						ctx.lineTo(x - 10, y + 1);
+						ctx.lineTo(x - 10, y - 3);
 						ctx.setLineDash([15, 5]);
 						ctx.stroke();
 						ctx.closePath();
@@ -317,7 +317,7 @@ a.Define.class('Audiogram', function(ns, $){
 					if (line) {
 						ctx.beginPath();
 						ctx.lineWidth=2;
-						ctx.moveTo(x + 10, y + 1);
+						ctx.moveTo(x + 10, y - 3);
 					}
 				}
 			}
@@ -353,21 +353,21 @@ a.Define.class('Audiogram', function(ns, $){
 		var x = 130;
 		ctx.fillStyle = "black";
 		ctx.font = "bold 44px sans-serif";
-		ctx.fillText("Audiogram", x, 200);
+		ctx.fillText("Audiogram", x, 100);
 
 		ctx.font = "25px sans-serif";
 		var meno = "Meno:";
 		var rc   = "Rodné číslo:";
 		var zp	 = "Poisťovňa:";
 		var udaje_x = Math.max(ctx.measureText(meno).width, ctx.measureText(rc).width, ctx.measureText(zp).width) + 10;
-		ctx.fillText(meno, x, 250);
-		ctx.fillText(a.Data.get('meno'), x + udaje_x, 250);
+		ctx.fillText(meno, x, 140);
+		ctx.fillText(a.Data.get('meno'), x + ctx.measureText(meno).width + 5, 140);
 
-		ctx.fillText(rc, x, 250 + 29);
-		ctx.fillText(a.Data.get('rodne_cislo'), x + udaje_x, 250 + 29);
+		ctx.fillText(rc, 900, 140);
+		ctx.fillText(a.Data.get('rodne_cislo'), 900 + udaje_x, 140);
 
-		ctx.fillText(zp, x, 250 + 29*2);
-		ctx.fillText(a.Data.get('zp'), x + udaje_x, 250 + 29*2);
+		ctx.fillText(zp, 1300, 140);
+		ctx.fillText(a.Data.get('zp'), 1300 + udaje_x, 140);
 
 		ctx.textBaseline="bottom";
 		var pracovisko = a.Data.get('pracovisko');
@@ -378,27 +378,27 @@ a.Define.class('Audiogram', function(ns, $){
 		ctx.textBaseline = save_tbl;
 
 		ctx.font = "18px sans-serif";
-		ctx.fillText("Vedenie: vzduchom (X, O), kosťou (], [)", x, 400 + 12.5*size);
+		ctx.fillText("Vedenie: vzduchom (O, X), kosťou ([, ])", 900, 200 + 12.5*size);
 
 		Audiogram.calculateHearingLoss();
-		ctx.font = "25px sans-serif";
+		ctx.font = "20px sans-serif";
 		var ssv = loss_left.toFixed(2)+" %";
 		var ssp = loss_right.toFixed(2)+" %";
 		var css = loss.toFixed(2)+" %";
 		var labels = ["Strata sluchu vľavo:", "Strata sluchu vpravo:", "Celková strata sluchu:"];
 		var perc_x = Math.max(ctx.measureText(labels[0]).width, ctx.measureText(labels[1]).width, ctx.measureText(labels[2]).width) + 10;
-		ctx.fillText("Strata sluchu vľavo:", x, 400 + 14*size);
-		ctx.fillText(ssv, x + perc_x, 400 + 14*size);
-		ctx.fillText("Strata sluchu vpravo:", x, 400 + 14.8 * size);
-		ctx.fillText(ssp, x + perc_x, 400 + 14.8*size);
-		ctx.fillText("Celková strata sluchu:", x, 400 + 15.6*size);
-		ctx.fillText(css, x + perc_x, 400 + 15.6*size);
+		ctx.fillText("Strata sluchu vľavo:", x, 200 + 13*size);
+		ctx.fillText(ssv, x + perc_x, 200 + 13*size);
+		ctx.fillText("Strata sluchu vpravo:", x, 200 + 13.8 * size);
+		ctx.fillText(ssp, x + perc_x, 200 + 13.8*size);
+		ctx.fillText("Celková strata sluchu:", x, 200 + 14.6*size);
+		ctx.fillText(css, x + perc_x, 200 + 14.6*size);
 
-		var y = ctx.wrapText("Tinnitus: "+a.Data.get('tinnitus'), x, 400 + 17*size, canvas.width - 260, 29);
+		var y = ctx.wrapText("Tinnitus: "+a.Data.get('tinnitus'), x + perc_x + 200, 200 + 13.2 *size, canvas.width - 130 - (x + perc_x + 200), 29);
 
-		ctx.fillText("Vyšetril(a): "+a.Data.get('vysetril'), 900, y + 40);
+		ctx.fillText("Vyšetril(a): "+a.Data.get('vysetril'), x + perc_x + 200, y + 10);
 
-		ctx.wrapText(a.Data.get('text'), x, y +200, canvas.width - 260, 29);
+		ctx.wrapText(a.Data.get('text'), x, y +65, canvas.width - 260, 24);
 	};
 
 	Audiogram._drawX = function(x, y) {
@@ -446,8 +446,8 @@ a.Define.class('Audiogram', function(ns, $){
 
 	Audiogram.new = function(){
 		a.Data.new();
-		right	= new a.Audiogram(130, 400, "Vpravo");
-		left	= new a.Audiogram(900, 400, "Vľavo");
+		right	= new a.Audiogram(130, 200, "Vpravo");
+		left	= new a.Audiogram(900, 200, "Vľavo");
 		Audiogram.reDraw();
 		_reset_history();
 		Audiogram.change = false;
@@ -493,7 +493,7 @@ a.Define.class('Audiogram', function(ns, $){
 
 		//console.log(x, y);
 
-		var table_y = 300;
+		var table_y = 200;
 
 		if (y < table_y) { // pred audiogramom
 			$('#udaje_form').foundation('open');
