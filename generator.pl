@@ -92,7 +92,7 @@ my $body = <<EOF;
 				<li>
 					<a href="#">Pomoc</a>
 					<ul class="menu vertical">
-						<li><a href="#" class="novy_audiogram" data-open="o_programe">O programe</a></li>
+						<li><a href="#" data-open="o_programe">O programe</a></li>
 					</ul>
 				</li>
 

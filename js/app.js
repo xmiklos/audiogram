@@ -361,7 +361,9 @@ a.Define.class('Audiogram', function(ns, $){
 		var zp	 = "Poisťovňa:";
 		var udaje_x = Math.max(ctx.measureText(meno).width, ctx.measureText(rc).width, ctx.measureText(zp).width) + 10;
 		ctx.fillText(meno, x, 140);
+		ctx.font = "bold 30px sans-serif";
 		ctx.fillText(a.Data.get('meno'), x + ctx.measureText(meno).width + 5, 140);
+		ctx.font = "25px sans-serif";
 
 		ctx.fillText(rc, 900, 140);
 		ctx.fillText(a.Data.get('rodne_cislo'), 900 + udaje_x, 140);
@@ -381,7 +383,7 @@ a.Define.class('Audiogram', function(ns, $){
 		ctx.fillText("Vedenie: vzduchom (O, X), kosťou ([, ])", 900, 200 + 12.5*size);
 
 		Audiogram.calculateHearingLoss();
-		ctx.font = "20px sans-serif";
+		ctx.font = "25px sans-serif";
 		var ssv = loss_left.toFixed(2)+" %";
 		var ssp = loss_right.toFixed(2)+" %";
 		var css = loss.toFixed(2)+" %";
@@ -398,6 +400,7 @@ a.Define.class('Audiogram', function(ns, $){
 
 		ctx.fillText("Vyšetril(a): "+a.Data.get('vysetril'), x + perc_x + 200, y + 10);
 
+		ctx.font = "20px sans-serif";
 		ctx.wrapText(a.Data.get('text'), x, y +65, canvas.width - 260, 24);
 	};
 
