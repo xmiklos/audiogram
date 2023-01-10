@@ -154,7 +154,8 @@ a.Define.class('Audiogram', function(ns, $){
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	var size = 40;
 	var font_size = 14;
-	var khz	=	[60,	125,	250,	500,	1000,	2000,	4000,	8000,	12000];
+	var khz         =	[60,	125,	250,	500,	1000,	2000,	4000,	8000,	12000];
+	var db          =      [ -10, -5, 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105];
 
 	// fowler strata sluchu
 	var db500 =	[
@@ -484,6 +485,74 @@ a.Define.class('Audiogram', function(ns, $){
 		return val != null ? val : db500.length-1;
 	}
 
+	Audiogram.to_string = function() {
+                var text = "Audiometrické vyšetrenie " + a.Data.get('datum') + "\n\n";
+                text += "Kostné vedenie vpravo:  ";
+                for (var i = 0; i < 7; ++i) {
+			var val = db[ right.bone[i] ];
+			if (val != null) {
+		               text += ("   " + val).slice(-3);
+		               if (i != 6) {
+					text += ', ';
+		               }
+                       } else {
+                       	text += "     ";
+                       }
+                }
+                text += "\nVzdušné vedenie vpravo: ";
+                for (var i = 0; i < 7; ++i) {
+			var val = db[ right.ear[i] ];
+			if (val != null) {
+		               text += ("   " + val).slice(-3);
+		               if (i != 6) {
+					text += ', ';
+		               }
+                       } else {
+                       	text += "     ";
+                       }
+                }
+                text += "\nKostné vedenie vľavo:   ";
+                for (var i = 0; i < 7; ++i) {
+			var val = db[ left.bone[i] ];
+			if (val != null) {
+		               text += ("   " + val).slice(-3);
+		               if (i != 6) {
+					text += ', ';
+		               }
+                       } else {
+                       	text += "     ";
+                       }
+                }
+                text += "\nVzdušné vedenie vľavo:  ";
+                for (var i = 0; i < 7; ++i) {
+			var val = db[ left.ear[i] ];
+			if (val != null) {
+		               text += ("   " + val).slice(-3);
+		               if (i != 6) {
+					text += ', ';
+		               }
+                       } else {
+                       	text += "     ";
+                       }
+                }
+                text += "\n\n";
+
+                text += "Strata sluchu podľa Fowlera:\n\n";
+                text += "Strata sluchu vľavo:   " + loss_left.toFixed(2) + " %\n";
+                text += "Strata sluchu vpravo:  " + loss_right.toFixed(2) + " %\n";
+                text += "Celková strata sluchu: " + loss.toFixed(2) + " %\n\n";
+                
+                text += "Tinnutus: " + a.Data.get('tinnitus') + "\n\n";
+                
+                text += "Vyšetril(a): " + a.Data.get('vysetril') + "\n\n\n";
+                text += "Tympanometrické vyšetrenie " + a.Data.get('datum') + "\n\n";
+                text += "Typ krivky vpravo: ,  daPa\n";
+                text += "Typ krivky vľavo: ,  daPa\n\n";
+                text += "Vyšetril(a): " + a.Data.get('vysetril') + "\n";
+                return text;
+	};
+
+
 	Audiogram.canvasClick = function(e) {
 		var rect = canvas.getBoundingClientRect();
 		var scale_x = canvas.width / $('#audiogram').width();
@@ -671,6 +740,15 @@ $(document).foundation();
 
 $(document).on('open.zf.reveal', '#udaje_form', function(){
 	a.Data.load();
+});
+
+$(document).on('open.zf.reveal', '#textovy_audiogram', function() {
+	$('textarea.textovy_audiogram').val( a.Audiogram.to_string() );
+});
+
+$(document).on('click', '#textovy_audiogram .copy', function(){
+	$("textarea.textovy_audiogram").select();
+	document.execCommand('copy');
 });
 
 $(document).on('click', '#udaje_form .uloz', function(){

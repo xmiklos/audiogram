@@ -49,3 +49,8 @@ canvas {
 	color: grey;
 	cursor: default;
 }
+
+textarea.textovy_audiogram { 
+	height: 75vh;
+	font-family: monospace;
+}

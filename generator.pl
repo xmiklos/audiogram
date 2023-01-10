@@ -68,6 +68,19 @@ Podpis pacienta ........................</textarea>
 </div>
 EOF
 
+my $textovy_audiogram_reveal = <<EOF;
+<div class="reveal large" id="textovy_audiogram" data-reveal>
+ 	<h4>Textový audiogram:</h4>
+	<div class="row">
+		<div class="column small-12">
+		        <textarea class="textovy_audiogram"></textarea>
+		        <button class="button copy float-right">Skopírovať</button>
+		</div>
+	</div>
+
+</div>
+EOF
+
 my $body = <<EOF;
 <div class="sticky_menu">
 	<div class="row">
@@ -87,6 +100,7 @@ my $body = <<EOF;
 					<ul class="menu vertical">
 						<li><a href="#" class="spat disabled">&#8617; Späť</a></li>
 						<li><a href="#" data-open="udaje_form">Údaje</a></li>
+						<li><a href="#" data-open="textovy_audiogram">Textový audiogram</a></li>
 					</ul>
 				</li>
 				<li>
@@ -108,11 +122,12 @@ my $body = <<EOF;
 	</div>
 </div>
 $udaje_form
+$textovy_audiogram_reveal
 <div class="reveal" id="o_programe" data-reveal>
 	<div class="row">
 		<div class="column" style="text-align: center;">
 			<p>Vytvoril:
-			<a href="mailto:xmiklos@fi.muni.cz">Michal Mikloš</a>, 2017</p>
+			<a href="mailto:michalmiklos47\@gmail.com">Michal Mikloš</a>, 2017</p>
 			<p><a href="https://github.com/xmiklos/audiogram">Github</a></p>
 		</div>
 	</div>
