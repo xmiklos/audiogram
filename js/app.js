@@ -401,8 +401,10 @@ a.Define.class('Audiogram', function(ns, $){
 
 		ctx.fillText("Vyšetril(a): "+a.Data.get('vysetril'), x + perc_x + 200, y + 10);
 
-		ctx.font = "20px sans-serif";
-		ctx.wrapText(a.Data.get('text'), x, y +65, canvas.width - 260, 24);
+		if ($('input[name=enable_text_pod]').is(':checked')) {
+			ctx.font = "20px sans-serif";
+			ctx.wrapText(a.Data.get('text'), x, y +65, canvas.width - 260, 24);
+		}
 	};
 
 	Audiogram._drawX = function(x, y) {
@@ -486,7 +488,7 @@ a.Define.class('Audiogram', function(ns, $){
 	}
 
 	Audiogram.to_string = function() {
-                var text = "Audiometrické vyšetrenie " + a.Data.get('datum') + "\n\n";
+                var text = "Audiometrické vyšetrenie " + a.Data.get('datum') + "\n";
                 text += "Kostné vedenie vpravo:  ";
                 for (var i = 0; i < 7; ++i) {
 			var val = db[ right.bone[i] ];
@@ -496,7 +498,11 @@ a.Define.class('Audiogram', function(ns, $){
 					text += ', ';
 		               }
                        } else {
-                       	text += "     ";
+                       	if (i != 0 && i != 6) {
+	                       	text += "  -, ";
+	                       } else {
+	                       	text += "     ";
+	                       }
                        }
                 }
                 text += "\nVzdušné vedenie vpravo: ";
@@ -508,7 +514,7 @@ a.Define.class('Audiogram', function(ns, $){
 					text += ', ';
 		               }
                        } else {
-                       	text += "     ";
+	                       text += "  -, ";
                        }
                 }
                 text += "\nKostné vedenie vľavo:   ";
@@ -520,7 +526,11 @@ a.Define.class('Audiogram', function(ns, $){
 					text += ', ';
 		               }
                        } else {
-                       	text += "     ";
+                       	if (i != 0 && i != 6) {
+	                       	text += "  -, ";
+	                       } else {
+	                       	text += "     ";
+	                       }
                        }
                 }
                 text += "\nVzdušné vedenie vľavo:  ";
@@ -532,22 +542,21 @@ a.Define.class('Audiogram', function(ns, $){
 					text += ', ';
 		               }
                        } else {
-                       	text += "     ";
+	                       text += "  -, ";
                        }
                 }
-                text += "\n\n";
+                text += "\n";
 
-                text += "Strata sluchu podľa Fowlera:\n\n";
+                text += "Strata sluchu podľa Fowlera:\n";
                 text += "Strata sluchu vľavo:   " + loss_left.toFixed(2) + " %\n";
                 text += "Strata sluchu vpravo:  " + loss_right.toFixed(2) + " %\n";
-                text += "Celková strata sluchu: " + loss.toFixed(2) + " %\n\n";
-                
-                text += "Tinnutus: " + a.Data.get('tinnitus') + "\n\n";
-                
-                text += "Vyšetril(a): " + a.Data.get('vysetril') + "\n\n\n";
-                text += "Tympanometrické vyšetrenie " + a.Data.get('datum') + "\n\n";
+                text += "Celková strata sluchu: " + loss.toFixed(2) + " %\n";
+                text += "Tinnitus: " + a.Data.get('tinnitus') + "\n";
+                text += "Vyšetril(a): " + a.Data.get('vysetril') + "\n";
+
+                text += "Tympanometrické vyšetrenie " + a.Data.get('datum') + "\n";
                 text += "Typ krivky vpravo: ,  daPa\n";
-                text += "Typ krivky vľavo: ,  daPa\n\n";
+                text += "Typ krivky vľavo: ,  daPa\n";
                 text += "Vyšetril(a): " + a.Data.get('vysetril') + "\n";
                 return text;
 	};

@@ -48,6 +48,7 @@ my $udaje_form = <<EOF;
 	</div>
 	<div class="row">
 		<div class="column small-12">
+			<label>Zapnúť text pod <input type="checkbox" name="enable_text_pod"/></label>
 			<label>Text pod
 				<textarea class="text" rows="4">Informovaný súhlas
 
